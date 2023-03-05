@@ -44,6 +44,12 @@ class LoginViewController: UIViewController {
         return indicator
     }()
     
+    private lazy var colorSwitch: UISwitch = {
+        let mySwitch = UISwitch(frame: CGRect(x: 50, y: 50, width: 0, height: 0))
+        mySwitch.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
+        return mySwitch
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayouts()
@@ -59,12 +65,15 @@ class LoginViewController: UIViewController {
         view.addSubview(loginButton)
         view.addSubview(errorLabel)
         view.addSubview(activityIndicator)
+        view.addSubview(colorSwitch)
         
         emailTextField.translatesAutoresizingMaskIntoConstraints = false
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
         loginButton.translatesAutoresizingMaskIntoConstraints = false
         errorLabel.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        colorSwitch.translatesAutoresizingMaskIntoConstraints = false
+
         
         NSLayoutConstraint.activate([
             emailTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -90,7 +99,12 @@ class LoginViewController: UIViewController {
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             activityIndicator.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 20),
             activityIndicator.widthAnchor.constraint(equalToConstant: 250),
-            activityIndicator.heightAnchor.constraint(equalToConstant: 60)
+            activityIndicator.heightAnchor.constraint(equalToConstant: 60),
+            
+            colorSwitch.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            colorSwitch.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 120),
+            colorSwitch.widthAnchor.constraint(equalToConstant: 250),
+            colorSwitch.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
     
@@ -131,6 +145,24 @@ class LoginViewController: UIViewController {
                 self?.errorLabel.text = "Hoş geldiniz, \(user.username)"
         }
         .store(in: &cancellables)
+    }
+    
+    @objc func switchChanged(mySwitch: UISwitch) {
+        if mySwitch.isOn {
+            changeColor(color: .gray)
+        } else {
+            changeColor(color: .white)
+        }
+    }
+    
+    func changeColor(color:UIColor) {
+        loginVM.changeColor(color: color)
+            .receive(on: DispatchQueue.main)
+            .sink{ [weak self] completion in
+                print("completion \(completion.self)")
+            }receiveValue: { [weak self] color in
+                self?.view.backgroundColor = color
+            }.store(in: &cancellables)
     }
 }
 
